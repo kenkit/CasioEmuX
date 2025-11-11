@@ -1,0 +1,27 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e2eeaed64..e6f5446a5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,7 +2,7 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+   message(FATAL_ERROR "Prevented in-tree build. Please create a build directory outside of the SDL source code and run \"cmake -S ${CMAKE_SOURCE_DIR} -B .\" from there")
+ endif()
+ 
+-cmake_minimum_required(VERSION 3.0.0)
++cmake_minimum_required(VERSION 3.16)
+ project(SDL2 C CXX)
+ 
+ if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+@@ -3144,7 +3144,7 @@ if (SDL_ASAN)
+ endif()
+ 
+ if(SDL_CCACHE)
+-  cmake_minimum_required(VERSION 3.4)
++  cmake_minimum_required(VERSION 3.16)
+   find_program(CCACHE_BINARY ccache)
+   if(CCACHE_BINARY)
+     set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_BINARY})
+@@ -3568,3 +3568,4 @@ set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} ${CMAKE_C_FLAGS}")
+ if(TARGET SDL2::SDL2-static AND NOT TARGET SDL2::SDL2)
+   add_library(SDL2::SDL2 ALIAS SDL2-static)
+ endif()
++

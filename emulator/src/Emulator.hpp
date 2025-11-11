@@ -5,7 +5,11 @@
 #include <map>
 #include <SDL.h>
 #include <SDL_image.h>
-#include <lua.hpp>
+extern "C" {
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+}
 #include <mutex>
 #include <thread>
 #include <condition_variable>

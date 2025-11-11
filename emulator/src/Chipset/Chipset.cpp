@@ -54,7 +54,7 @@ namespace casioemu
 		                          emulator.hardware_id == HW_CLASSWIZ_II ? segments_classwiz_ii : segments_fx_5800p)
 			mmu.GenerateSegmentDispatch(segment_index);
 
-		real_hardware = emulator.GetModelInfo("real_hardware");
+		real_hardware = emulator.GetModelInfo("real_hardware").asInt();
 
 		ConstructPeripherals();
 	}
@@ -330,7 +330,7 @@ namespace casioemu
 
 	void Chipset::SetupInternals()
 	{
-		std::ifstream rom_handle(emulator.GetModelFilePath(emulator.GetModelInfo("rom_path")), std::ifstream::binary);
+		std::ifstream rom_handle(emulator.GetModelFilePath(emulator.GetModelInfo("rom_path").asString()), std::ifstream::binary);
 		if (rom_handle.fail())
 			PANIC("std::ifstream failed: %s\n", std::strerror(errno));
 		rom_data = std::vector<unsigned char>((std::istreambuf_iterator<char>(rom_handle)), std::istreambuf_iterator<char>());

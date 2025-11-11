@@ -9,7 +9,11 @@
 #include <fstream>
 #include <thread>
 #include <chrono>
-#include <lua.hpp>
+extern "C" {
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+}
 #include <SDL.h>
 
 namespace casioemu
@@ -24,7 +28,7 @@ namespace casioemu
 		 * calculator emulator provided by Casio, which has different keyboard input
 		 * interface.
 		 */
-		real_hardware = emulator.GetModelInfo("real_hardware");
+		real_hardware = static_cast<bool>(emulator.GetModelInfo("real_hardware").asInt());
 
 		clock_type = CLOCK_UNDEFINED;
 
@@ -83,7 +87,7 @@ namespace casioemu
 
 		if (!real_hardware)
 		{
-			keyboard_pd_emu = emulator.GetModelInfo("pd_value");
+			keyboard_pd_emu = static_cast<uint8_t>(emulator.GetModelInfo("pd_value").asInt());
 			keyboard_ready_emu = 1;
 			emu_ki_readcount = 0;
 			emu_ko_readcount = 0;

@@ -11,14 +11,13 @@ namespace casioemu
 
 	struct ModelInfo
 	{
-		ModelInfo(Emulator &emulator, std::string key);
-		Emulator &emulator;
+		ModelInfo(Emulator *emulator, std::string key);
+		Emulator *emulator;
 		std::string key;
 
-		operator std::string();
-		operator int();
-		operator SpriteInfo();
-		operator ColourInfo();
+		std::string asString();
+		int asInt();
+		SpriteInfo asSpriteInfo();
+		ColourInfo asColourInfo();
 	};
 }
-

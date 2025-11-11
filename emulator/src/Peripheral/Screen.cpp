@@ -13,86 +13,6 @@
 
 namespace casioemu
 {
-	struct SpriteBitmap
-	{
-		const char *name;
-		uint8_t mask, offset;
-	};
-
-	template <HardwareId hardware_id>
-	class Screen : public Peripheral
-	{
-		static int const N_ROW, // excluding the 1 row used for status line
-			ROW_SIZE, // bytes
-			OFFSET, // bytes
-			ROW_SIZE_DISP; // bytes used to display
-
-		MMURegion region_buffer, region_buffer1, region_contrast, region_mode, region_range, region_select;
-		uint8_t *screen_buffer, *screen_buffer1, screen_contrast, screen_mode, screen_range, screen_select;
-
-	    SDL_Renderer *renderer;
-	    SDL_Texture *interface_texture;
-
-		enum Sprite : unsigned {
-		};
-
-		static const SpriteBitmap sprite_bitmap[];
-		std::vector<SpriteInfo> sprite_info;
-		ColourInfo ink_colour;
-
-		/**
-		 * Similar to MMURegion::DefaultRead, but takes the pointer to the Screen
-		 * object as the userdata instead of the uint8_t member.
-		 */
-		template<typename value_type, value_type mask = (value_type)-1,
-			value_type Screen:: *member_ptr>
-		static uint8_t DefaultRead(MMURegion *region, size_t offset)
-		{
-			auto this_obj = (Screen *)(region->userdata);
-			value_type value = this_obj->*member_ptr;
-			return (value & mask) >> ((offset - region->base) * 8);
-		}
-
-		/**
-		 * Similar to MMURegion::DefaultWrite, except this also set the
-		 * (require_frame) flag of (Peripheral) class.
-		 * If (only_on_change) is true, (require_frame) is not set if the new value
-		 * is the same as the old value.
-		 * (region->userdata) should be a pointer to a (Screen) instance.
-		 *
-		 * TODO: Probably this should be a member of Peripheral class instead.
-		 * (in that case (Screen) class needs to be parameterized)
-		 */
-		template<typename value_type, value_type mask = (value_type)-1,
-			value_type Screen:: *member_ptr, bool only_on_change = true>
-		static void SetRequireFrameWrite(MMURegion *region, size_t offset, uint8_t data)
-		{
-			auto this_obj = (Screen *)(region->userdata);
-			value_type &value = this_obj->*member_ptr;
-
-			value_type old_value;
-			if (only_on_change)
-				old_value = value;
-
-			// This part is identical to MMURegion::DefaultWrite.
-			// * TODO Try to avoid duplication?
-			value &= ~(((value_type)0xFF) << ((offset - region->base) * 8));
-			value |= ((value_type)data) << ((offset - region->base) * 8);
-			value &= mask;
-
-			if (only_on_change && old_value == value)
-				return;
-			this_obj->require_frame = true;
-		}
-
-	public:
-		using Peripheral::Peripheral;
-
-		void Initialise();
-		void Uninitialise();
-		void Frame();
-	};
-
 	template <> const int Screen<HW_CLASSWIZ_II>::N_ROW = 63;
 	template <> const int Screen<HW_CLASSWIZ_II>::ROW_SIZE = 32;
 	template <> const int Screen<HW_CLASSWIZ_II>::OFFSET = 32;
@@ -108,89 +28,7 @@ namespace casioemu
 	template <> const int Screen<HW_ES_PLUS>::OFFSET = 16;
 	template <> const int Screen<HW_ES_PLUS>::ROW_SIZE_DISP = 12;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic" // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61491
-	// Note: SPR_PIXEL must be the first enum member and SPR_MAX must be the last one.
-	template <> enum Screen<HW_CLASSWIZ_II>::Sprite :unsigned
-	{
-		SPR_PIXEL,
-		SPR_S,
-		SPR_MATH,
-		SPR_D,
-		SPR_R,
-		SPR_G,
-		SPR_FIX,
-		SPR_SCI,
-		SPR_FX,
-		SPR_E,
-		SPR_CMPLX,
-		SPR_ANGLE,
-		SPR_WDOWN,
-		SPR_VERIFY,
-		SPR_GX,
-		SPR_LEFT,
-		SPR_DOWN,
-		SPR_UP,
-		SPR_RIGHT,
-		SPR_PAUSE,
-		SPR_SUN,
-		SPR_MAX
-	};
-
-	template <> enum Screen<HW_CLASSWIZ>::Sprite : unsigned
-	{
-		SPR_PIXEL,
-		SPR_S,
-		SPR_A,
-		SPR_M,
-		SPR_STO,
-		SPR_MATH,
-		SPR_D,
-		SPR_R,
-		SPR_G,
-		SPR_FIX,
-		SPR_SCI,
-		SPR_E,
-		SPR_CMPLX,
-		SPR_ANGLE,
-		SPR_WDOWN,
-		SPR_LEFT,
-		SPR_DOWN,
-		SPR_UP,
-		SPR_RIGHT,
-		SPR_PAUSE,
-		SPR_SUN,
-		SPR_MAX
-	};
-
-	template <> enum Screen<HW_ES_PLUS>::Sprite : unsigned
-	{
-		SPR_PIXEL,
-		SPR_S,
-		SPR_A,
-		SPR_M,
-		SPR_STO,
-		SPR_RCL,
-		SPR_STAT,
-		SPR_CMPLX,
-		SPR_MAT,
-		SPR_VCT,
-		SPR_D,
-		SPR_R,
-		SPR_G,
-		SPR_FIX,
-		SPR_SCI,
-		SPR_MATH,
-		SPR_DOWN,
-		SPR_UP,
-		SPR_DISP,
-		SPR_MAX
-	};
-
-#pragma GCC diagnostic pop
-
-
-	template<> const SpriteBitmap Screen<HW_CLASSWIZ_II>::sprite_bitmap[SPR_MAX] = {
+	template<> const SpriteBitmap Screen<HW_CLASSWIZ_II>::sprite_bitmap[SpriteEnums<HW_CLASSWIZ_II>::SPR_MAX] = {
 		{"rsd_pixel",    0,    0},
 		{"rsd_s",     0x01, 0x01},
 		{"rsd_math",  0x01, 0x03},
@@ -214,7 +52,7 @@ namespace casioemu
 		{"rsd_sun",   0x01, 0x16}
 	};
 
-	template<> const SpriteBitmap Screen<HW_CLASSWIZ>::sprite_bitmap[SPR_MAX] = {
+	template<> const SpriteBitmap Screen<HW_CLASSWIZ>::sprite_bitmap[SpriteEnums<HW_CLASSWIZ>::SPR_MAX] = {
 		{"rsd_pixel",    0,    0},
 		{"rsd_s",     0x01, 0x00},
 		{"rsd_a",     0x01, 0x01},
@@ -238,7 +76,7 @@ namespace casioemu
 		{"rsd_sun",   0x01, 0x16}
 	};
 
-	template<> const SpriteBitmap Screen<HW_ES_PLUS>::sprite_bitmap[SPR_MAX] = {
+	template<> const SpriteBitmap Screen<HW_ES_PLUS>::sprite_bitmap[SpriteEnums<HW_ES_PLUS>::SPR_MAX] = {
 		{"rsd_pixel",    0,    0},
 		{"rsd_s",     0x10, 0x00},
 		{"rsd_a",     0x04, 0x00},
@@ -262,7 +100,7 @@ namespace casioemu
 
 	template <HardwareId hardware_id> void Screen<hardware_id>::Initialise()
 	{
-		auto constexpr SPR_MAX = Sprite::SPR_MAX;
+		auto constexpr SPR_MAX = SpriteEnums<hardware_id>::SPR_MAX;
 
 		static_assert(SPR_MAX == (sizeof(sprite_bitmap) / sizeof(sprite_bitmap[0])), "SPR_MAX and sizeof(sprite_bitmap) don't match");
 
@@ -270,9 +108,9 @@ namespace casioemu
 	    interface_texture = emulator.GetInterfaceTexture();
 		sprite_info.resize(SPR_MAX);
 		for (int ix = 0; ix != SPR_MAX; ++ix)
-			sprite_info[ix] = emulator.GetModelInfo(sprite_bitmap[ix].name);
+			sprite_info[ix] = emulator.GetModelInfo(sprite_bitmap[ix].name).asSpriteInfo();
 		
-		ink_colour = emulator.GetModelInfo("ink_colour");
+		ink_colour = emulator.GetModelInfo("ink_colour").asColourInfo();
 		require_frame = true;
 
 		screen_buffer = new uint8_t[(N_ROW + 1) * ROW_SIZE];
@@ -297,7 +135,7 @@ namespace casioemu
 			screen_buffer1 = new uint8_t[(N_ROW + 1) * ROW_SIZE];
 			region_select.Setup(0xF037, 1, "Screen/Select", this, DefaultRead<uint8_t, 0x04, &Screen::screen_select>,
 				SetRequireFrameWrite<uint8_t, 0x04, &Screen::screen_select>, emulator);
-			if(!emulator.GetModelInfo("real_hardware")) {
+			if(!static_cast<bool>(emulator.GetModelInfo("real_hardware").asInt())) {
 				region_buffer.Setup(0xF800, (N_ROW + 1) * ROW_SIZE, "Screen/Buffer", this, [](MMURegion *region, size_t offset) {
 					offset -= region->base;
 					if (offset % ROW_SIZE >= ROW_SIZE_DISP)
@@ -375,6 +213,9 @@ namespace casioemu
 
 	template<HardwareId hardware_id> void Screen<hardware_id>::Frame()
 	{
+		typename Screen<hardware_id>::Sprite SPR_PIXEL_ENUM = Screen<hardware_id>::Sprite::SPR_PIXEL;
+		typename Screen<hardware_id>::Sprite SPR_MAX_ENUM = Screen<hardware_id>::Sprite::SPR_MAX;
+
 		require_frame = false;
 
 		int ink_alpha_on = 20 + screen_contrast * 16;
@@ -417,8 +258,8 @@ namespace casioemu
 		if (enable_status)
 		{
 			int ink_alpha = ink_alpha_off;
-			if(emulator.hardware_id == HW_CLASSWIZ_II && emulator.GetModelInfo("real_hardware")) {
-				for (int ix = Sprite::SPR_PIXEL + 1; ix != Sprite::SPR_MAX; ++ix)
+			if(emulator.hardware_id == HW_CLASSWIZ_II && static_cast<bool>(emulator.GetModelInfo("real_hardware").asInt())) {
+				for (int ix = SPR_PIXEL_ENUM + 1; ix != SPR_MAX_ENUM; ++ix)
 				{
 					ink_alpha = ink_alpha_off;
 					if (screen_buffer[sprite_bitmap[ix].offset] & sprite_bitmap[ix].mask)
@@ -429,7 +270,7 @@ namespace casioemu
 					SDL_RenderCopy(renderer, interface_texture, &sprite_info[ix].src, &sprite_info[ix].dest);
 				}
 			} else {
-				for (int ix = Sprite::SPR_PIXEL + 1; ix != Sprite::SPR_MAX; ++ix)
+				for (int ix = SPR_PIXEL_ENUM + 1; ix != SPR_MAX_ENUM; ++ix)
 				{
 					if (screen_buffer[sprite_bitmap[ix].offset] & sprite_bitmap[ix].mask)
 						SDL_SetTextureAlphaMod(interface_texture, ink_alpha_on);
@@ -442,25 +283,24 @@ namespace casioemu
 
 		if (enable_dotmatrix)
 		{
-			static constexpr auto SPR_PIXEL = Sprite::SPR_PIXEL;
-			SDL_Rect dest = Screen<hardware_id>::sprite_info[SPR_PIXEL].dest;
+			SDL_Rect dest = Screen<hardware_id>::sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].dest;
 			int ink_alpha = ink_alpha_off;
 			if (emulator.hardware_id == HW_CLASSWIZ_II) {
 				for (int iy = 0; iy != N_ROW; ++iy)
 				{
-					dest.x = sprite_info[SPR_PIXEL].dest.x;
-					dest.y = sprite_info[SPR_PIXEL].dest.y + iy * sprite_info[SPR_PIXEL].src.h;
+					dest.x = sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].dest.x;
+					dest.y = sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].dest.y + iy * sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].src.h;
 					for (int ix = 0; ix != ROW_SIZE_DISP; ++ix)
 					{
-						for (uint8_t mask = 0x80; mask; mask >>= 1, dest.x += sprite_info[SPR_PIXEL].src.w)
+						for (uint8_t mask = 0x80; mask; mask >>= 1, dest.x += sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].src.w)
 						{
 							ink_alpha = ink_alpha_off;
 							if (!clear_dots && screen_buffer[iy * ROW_SIZE + OFFSET + ix] & mask)
-								ink_alpha += (ink_alpha_on - ink_alpha_off) * 0.333;
+								ink_alpha += static_cast<int>((ink_alpha_on - ink_alpha_off) * 0.333);
 							if (!clear_dots && screen_buffer1[iy * ROW_SIZE + OFFSET + ix] & mask)
-								ink_alpha += (ink_alpha_on - ink_alpha_off) * 0.667;
+								ink_alpha += static_cast<int>((ink_alpha_on - ink_alpha_off) * 0.667);
 							SDL_SetTextureAlphaMod(interface_texture, ink_alpha);
-							SDL_RenderCopy(renderer, interface_texture, &sprite_info[SPR_PIXEL].src, &dest);
+							SDL_RenderCopy(renderer, interface_texture, &sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].src, &dest);
 						}
 					}
 				}
@@ -468,17 +308,17 @@ namespace casioemu
 			else {
 				for (int iy = 0; iy != N_ROW; ++iy)
 				{
-					dest.x = sprite_info[SPR_PIXEL].dest.x;
-					dest.y = sprite_info[SPR_PIXEL].dest.y + iy * sprite_info[SPR_PIXEL].src.h;
+					dest.x = sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].dest.x;
+					dest.y = sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].dest.y + iy * sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].src.h;
 					for (int ix = 0; ix != ROW_SIZE_DISP; ++ix)
 					{
-						for (uint8_t mask = 0x80; mask; mask >>= 1, dest.x += sprite_info[SPR_PIXEL].src.w)
+						for (uint8_t mask = 0x80; mask; mask >>= 1, dest.x += sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].src.w)
 						{
 							if (!clear_dots && screen_buffer[iy * ROW_SIZE + OFFSET + ix] & mask)
 								SDL_SetTextureAlphaMod(interface_texture, ink_alpha_on);
 							else
 								SDL_SetTextureAlphaMod(interface_texture, ink_alpha_off);
-							SDL_RenderCopy(renderer, interface_texture, &sprite_info[SPR_PIXEL].src, &dest);
+							SDL_RenderCopy(renderer, interface_texture, &sprite_info[static_cast<int>(SpriteEnums<hardware_id>::Sprite::SPR_PIXEL)].src, &dest);
 						}
 					}
 				}

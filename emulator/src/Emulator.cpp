@@ -26,7 +26,7 @@ namespace casioemu
 		SetupLuaAPI();
 		LoadModelDefition();
 
-		int hardware_id = GetModelInfo("hardware_id");
+		int hardware_id = GetModelInfo("hardware_id").asInt();
 		if (hardware_id != HW_ES_PLUS && hardware_id != HW_CLASSWIZ && hardware_id != HW_CLASSWIZ_II && hardware_id != HW_FX_5800P)
 			PANIC("Unknown hardware id %d\n", hardware_id);
 		this->hardware_id = (HardwareId)hardware_id;
@@ -40,7 +40,7 @@ namespace casioemu
 		BatteryVoltage = 1.5;
 		SolarPanelVoltage = 1.5;
 
-		interface_background = GetModelInfo("rsd_interface");
+		interface_background = GetModelInfo("rsd_interface").asSpriteInfo();
 		if (interface_background.dest.x != 0 || interface_background.dest.y != 0)
 			PANIC("rsd_interface must have dest x and y coordinate zero\n");
 
@@ -77,7 +77,7 @@ namespace casioemu
 
 		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 		window = SDL_CreateWindow(
-			std::string(GetModelInfo("model_name")).c_str(),
+			GetModelInfo("model_name").asString().c_str(),
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			width, height,
@@ -90,7 +90,7 @@ namespace casioemu
 		if (!renderer)
 			PANIC("SDL_CreateRenderer failed: %s\n", SDL_GetError());
 
-		SDL_Surface *loaded_surface = IMG_Load(GetModelFilePath(GetModelInfo("interface_image_path")).c_str());
+		SDL_Surface *loaded_surface = IMG_Load(GetModelFilePath(GetModelInfo("interface_image_path").asString()).c_str());
 		if (!loaded_surface)
 			PANIC("IMG_Load failed: %s\n", IMG_GetError());
 		interface_texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);

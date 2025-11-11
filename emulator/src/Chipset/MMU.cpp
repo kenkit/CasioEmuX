@@ -39,7 +39,7 @@ namespace casioemu
 	void MMU::SetupInternals()
 	{
 		me_mmu = this;
-		real_hardware = emulator.GetModelInfo("real_hardware");
+		real_hardware = static_cast<bool>(emulator.GetModelInfo("real_hardware").asInt());
 
 		emulator.chipset.SegmentAccess = false;
 

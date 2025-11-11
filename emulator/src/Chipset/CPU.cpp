@@ -251,8 +251,8 @@ namespace casioemu
 		SetupOpcodeDispatch();
 		SetupRegisterProxies();
 
-		impl_csr_mask = emulator.GetModelInfo("csr_mask");
-		real_hardware = emulator.GetModelInfo("real_hardware");
+		impl_csr_mask = static_cast<uint16_t>(emulator.GetModelInfo("csr_mask").asInt());
+		real_hardware = static_cast<bool>(emulator.GetModelInfo("real_hardware").asInt());
 		
 		//Only tested on classwiz models
 		dsr_mask = (emulator.hardware_id == HW_CLASSWIZ || emulator.hardware_id == HW_CLASSWIZ_II) ? 0x1F : 0xFF;

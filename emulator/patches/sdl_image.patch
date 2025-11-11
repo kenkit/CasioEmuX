@@ -1,0 +1,346 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 438a0aa2..60f015e7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -160,7 +160,7 @@ else()
+     set(sdl2_target_name SDL2::SDL2-static)
+ endif()
+ 
+-sdl_find_sdl2(${sdl2_target_name} ${SDL_REQUIRED_VERSION})
++#sdl_find_sdl2(${sdl2_target_name} ${SDL_REQUIRED_VERSION}) # Commented out
+ 
+ # Set PROJECT_VERSION of subprojects to "" if it's project call does not set VERSION
+ cmake_policy(SET CMP0048 NEW)
+@@ -209,7 +209,7 @@ target_compile_definitions(SDL2_image PRIVATE
+     SDL_BUILD_MINOR_VERSION=${MINOR_VERSION}
+     SDL_BUILD_MICRO_VERSION=${MICRO_VERSION}
+ )
+-target_link_libraries(SDL2_image PRIVATE ${sdl2_target_name})
++target_link_libraries(SDL2_image PRIVATE SDL2::SDL2) # Changed from ${sdl2_target_name}
+ if(WIN32 AND SDL2IMAGE_BUILD_SHARED_LIBS)
+     target_sources(SDL2_image PRIVATE
+         version.rc
+@@ -350,9 +350,9 @@ if(SDL2IMAGE_AVIF)
+     endif()
+     if(SDL2IMAGE_AVIF_SHARED)
+         target_include_directories(SDL2_image PRIVATE
+-            $<TARGET_PROPERTY:avif,INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:avif,INTERFACE_INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:avif,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
++            "$<TARGET_PROPERTY:avif,INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:avif,INTERFACE_INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:avif,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>"
+         )
+         target_get_dynamic_library(dynamic_avif avif)
+         message(STATUS "Dynamic libavif: ${dynamic_avif}")
+@@ -376,8 +376,7 @@ endif()
+ if(SDL2IMAGE_JPG)
+     target_compile_definitions(SDL2_image PRIVATE
+         LOAD_JPG
+-        SDL_IMAGE_SAVE_JPG=$<BOOL:${SDL2IMAGE_JPG_SAVE}>
+-    )
++        SDL_IMAGE_SAVE_JPG=$<BOOL:${SDL2IMAGE_JPG_SAVE}>)
+     if(NOT SDL2IMAGE_BACKEND_STB AND NOT SDL2IMAGE_BACKEND_WIC AND NOT SDL2IMAGE_BACKEND_IMAGEIO)
+         if(SDL2IMAGE_JPG_VENDORED)
+             message(STATUS "${PROJECT_NAME}: Using vendored libjpeg")
+@@ -395,9 +394,9 @@ if(SDL2IMAGE_JPG)
+         endif()
+         if(SDL2IMAGE_JPG_SHARED)
+             target_include_directories(SDL2_image PRIVATE
+-                $<TARGET_PROPERTY:JPEG::JPEG,INCLUDE_DIRECTORIES>
+-                $<TARGET_PROPERTY:JPEG::JPEG,INTERFACE_INCLUDE_DIRECTORIES>
+-                $<TARGET_PROPERTY:JPEG::JPEG,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
++                "$<TARGET_PROPERTY:JPEG::JPEG,INCLUDE_DIRECTORIES>"
++                "$<TARGET_PROPERTY:JPEG::JPEG,INTERFACE_INCLUDE_DIRECTORIES>"
++                "$<TARGET_PROPERTY:JPEG::JPEG,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>"
+             )
+             target_get_dynamic_library(dynamic_jpeg JPEG::JPEG)
+             message(STATUS "Dynamic libjpeg: ${dynamic_jpeg}")
+@@ -434,8 +433,7 @@ if(SDL2IMAGE_JXL)
+             if(NOT SDL2IMAGE_JXL_SHARED)
+                 list(APPEND PC_LIBS
+                     -l$<TARGET_FILE_BASE_NAME:brotlidec> -l$<TARGET_FILE_BASE_NAME:brotlicommon>
+-                    -l$<TARGET_FILE_BASE_NAME:brotlienc> -l$<TARGET_FILE_BASE_NAME:${jxl_lib}>
+-                )
++                    -l$<TARGET_FILE_BASE_NAME:brotlienc> -l$<TARGET_FILE_BASE_NAME:${jxl_lib}>)
+             endif()
+         else()
+             set(jxl_lib jxl_dec-static)
+@@ -451,9 +449,9 @@ if(SDL2IMAGE_JXL)
+     endif()
+     if(SDL2IMAGE_JXL_SHARED)
+         target_include_directories(SDL2_image PRIVATE
+-            $<TARGET_PROPERTY:libjxl::libjxl,INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:libjxl::libjxl,INTERFACE_INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:libjxl::libjxl,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
++            "$<TARGET_PROPERTY:libjxl::libjxl,INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:libjxl::libjxl,INTERFACE_INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:libjxl::libjxl,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>"
+         )
+         target_get_dynamic_library(dynamic_jxl libjxl::libjxl)
+         message(STATUS "Dynamic libjxl: ${dynamic_jxl}")
+@@ -477,8 +475,7 @@ endif()
+ if(SDL2IMAGE_PNG)
+     target_compile_definitions(SDL2_image PRIVATE
+         LOAD_PNG
+-        SDL_IMAGE_SAVE_PNG=$<BOOL:${SDL2IMAGE_PNG_SAVE}>
+-    )
++        SDL_IMAGE_SAVE_PNG=$<BOOL:${SDL2IMAGE_PNG_SAVE}>)
+     if(NOT SDL2IMAGE_BACKEND_STB AND NOT SDL2IMAGE_BACKEND_WIC AND NOT SDL2IMAGE_BACKEND_IMAGEIO)
+         set(HAVE_LD_VERSION_SCRIPT OFF CACHE BOOL "" FORCE)
+         if(SDL2IMAGE_PNG_VENDORED)
+@@ -508,9 +505,9 @@ if(SDL2IMAGE_PNG)
+         endif()
+         if(SDL2IMAGE_PNG_SHARED)
+             target_include_directories(SDL2_image PRIVATE
+-                $<TARGET_PROPERTY:PNG::PNG,INCLUDE_DIRECTORIES>
+-                $<TARGET_PROPERTY:PNG::PNG,INTERFACE_INCLUDE_DIRECTORIES>
+-                $<TARGET_PROPERTY:PNG::PNG,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
++                "$<TARGET_PROPERTY:PNG::PNG,INCLUDE_DIRECTORIES>"
++                "$<TARGET_PROPERTY:PNG::PNG,INTERFACE_INCLUDE_DIRECTORIES>"
++                "$<TARGET_PROPERTY:PNG::PNG,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>"
+             )
+             target_get_dynamic_library(dynamic_png PNG::PNG)
+             message(STATUS "Dynamic libpng: ${dynamic_png}")
+@@ -579,9 +576,9 @@ if(SDL2IMAGE_TIF)
+     endif()
+     if(SDL2IMAGE_TIF_SHARED)
+         target_include_directories(SDL2_image PRIVATE
+-            $<TARGET_PROPERTY:TIFF::TIFF,INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:TIFF::TIFF,INTERFACE_INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:TIFF::TIFF,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
++            "$<TARGET_PROPERTY:TIFF::TIFF,INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:TIFF::TIFF,INTERFACE_INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:TIFF::TIFF,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>"
+         )
+         target_get_dynamic_library(dynamic_tif TIFF::TIFF)
+         message(STATUS "Dynamic libtiff: ${dynamic_tif}")
+@@ -612,9 +609,9 @@ if(SDL2IMAGE_WEBP)
+     endif()
+     if(SDL2IMAGE_WEBP_SHARED)
+         target_include_directories(SDL2_image PRIVATE
+-            $<TARGET_PROPERTY:WebP::webp,INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:WebP::webp,INTERFACE_INCLUDE_DIRECTORIES>
+-            $<TARGET_PROPERTY:WebP::webp,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
++            "$<TARGET_PROPERTY:WebP::webp,INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:WebP::webp,INTERFACE_INCLUDE_DIRECTORIES>"
++            "$<TARGET_PROPERTY:WebP::webp,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>"
+         )
+         target_get_dynamic_library(dynamic_webp WebP::webp)
+         message(STATUS "Dynamic libwebp: ${dynamic_webp}")
+@@ -642,110 +639,109 @@ endif()
+ # Restore BUILD_SHARED_LIBS
+ set(BUILD_SHARED_LIBS ${SDL2IMAGE_BUILD_SHARED_LIBS})
+ 
+-if(SDL2IMAGE_INSTALL)
+-    install(
+-        TARGETS SDL2_image
+-        EXPORT SDL2ImageExports
+-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT devel
+-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
+-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT library
+-        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL2" COMPONENT devel
+-    )
+-
+-    if(INSTALL_EXTRA_TARGETS)
+-        install(
+-            TARGETS ${INSTALL_EXTRA_TARGETS}
+-            EXPORT SDL2ImageExports
+-            ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT devel
+-            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
+-            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT library
+-            PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT devel
+-        )
+-    endif()
+-
+-    if(APPLE)
+-        set(PKG_PREFIX "SDL2_image.framework/Resources")
+-    elseif(WIN32 AND NOT MINGW)
+-        set(PKG_PREFIX "cmake")
+-    else()
+-        set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2_image")
+-    endif()
+-
+-    configure_package_config_file(SDL2_imageConfig.cmake.in SDL2_imageConfig.cmake
+-        INSTALL_DESTINATION "${PKG_PREFIX}"
+-    )
+-    write_basic_package_version_file("${PROJECT_BINARY_DIR}/SDL2_imageConfigVersion.cmake"
+-        VERSION ${FULL_VERSION}
+-        COMPATIBILITY AnyNewerVersion
+-    )
+-    install(
+-        FILES
+-            "${CMAKE_CURRENT_BINARY_DIR}/SDL2_imageConfig.cmake"
+-            "${CMAKE_CURRENT_BINARY_DIR}/SDL2_imageConfigVersion.cmake"
+-            cmake/Findlibjxl.cmake
+-            cmake/Findwebp.cmake
+-        DESTINATION "${PKG_PREFIX}"
+-        COMPONENT devel
+-    )
+-    install(EXPORT SDL2ImageExports
+-        FILE SDL2_image-${sdl2_image_install_name_infix}-targets.cmake
+-        NAMESPACE SDL2_image::
+-        DESTINATION "${PKG_PREFIX}"
+-        COMPONENT devel
+-    )
+-
+-    if(SDL2IMAGE_BUILD_SHARED_LIBS)
+-        # Only create a .pc file for a shared SDL2_image
+-        set(prefix "${CMAKE_INSTALL_PREFIX}")
+-        set(exec_prefix "\${prefix}")
+-        set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+-        set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+-        set(PACKAGE "${PROJECT_NAME}")
+-        set(VERSION "${FULL_VERSION}")
+-        set(SDL_VERSION "${SDL_REQUIRED_VERSION}")
+-        string(JOIN " " PC_REQUIRES ${PC_REQUIRES})
+-        string(JOIN " " PC_LIBS ${PC_LIBS})
+-        configure_file("${PROJECT_SOURCE_DIR}/SDL2_image.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc.intermediate" @ONLY)
+-        file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/SDL2_image-$<CONFIG>.pc" INPUT "${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc.intermediate")
+-
+-        set(PC_DESTDIR)
+-        if(CMAKE_SYSTEM_NAME MATCHES FreeBSD)
+-            # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+-            set(PC_DESTDIR "libdata/pkgconfig")
+-        else()
+-            set(PC_DESTDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+-        endif()
+-        # Only install a SDL2_image.pc file in Release mode
+-        install(CODE "
+-            # FIXME: use file(COPY_FILE) if minimum CMake version >= 3.21
+-            execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy_if_different
+-                \"${CMAKE_CURRENT_BINARY_DIR}/SDL2_image-$<CONFIG>.pc\"
+-                \"${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc\")
+-            file(INSTALL DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PC_DESTDIR}\"
+-                TYPE FILE
+-                FILES \"${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc\")" CONFIG Release COMPONENT devel)
+-    endif()
+-
+-    if(SDL2IMAGE_BUILD_SHARED_LIBS AND (APPLE OR (UNIX AND NOT ANDROID)))
+-        install(
+-            FILES
+-                "${PROJECT_BINARY_DIR}/libSDL2_image$<$<CONFIG:Debug>:${SDL2IMAGE_DEBUG_POSTFIX}>$<TARGET_FILE_SUFFIX:SDL2_image>"
+-            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+-            COMPONENT devel
+-        )
+-    endif()
+-
+-    install(FILES "LICENSE.txt"
+-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}"
+-        COMPONENT library
+-    )
+-endif()
++#if(SDL2IMAGE_INSTALL) # Commented out
++#    install(
++#        TARGETS SDL2_image
++#        EXPORT SDL2ImageExports
++#        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT devel
++#        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
++#        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT library
++#        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL2" COMPONENT devel
++#    )
++
++#    if(INSTALL_EXTRA_TARGETS)
++#        install(
++#            TARGETS ${INSTALL_EXTRA_TARGETS}
++#            EXPORT SDL2ImageExports
++#            ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT devel
++#            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT library
++#            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT library
++#            PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT devel
++#        )
++#    endif()
++
++#    if(APPLE)
++#        set(PKG_PREFIX "SDL2_image.framework/Resources")
++#    elseif(WIN32 AND NOT MINGW)
++#        set(PKG_PREFIX "cmake")
++#    else()
++#        set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2_image")
++#    endif()
++
++#    configure_package_config_file(SDL2_imageConfig.cmake.in SDL2_imageConfig.cmake
++#        INSTALL_DESTINATION "${PKG_PREFIX}"
++#    )
++#    write_basic_package_version_file("${PROJECT_BINARY_DIR}/SDL2_imageConfigVersion.cmake"
++#        VERSION ${FULL_VERSION}
++#        COMPATIBILITY AnyNewerVersion
++#    )
++#    install(
++#        FILES
++#            "${CMAKE_CURRENT_BINARY_DIR}/SDL2_imageConfig.cmake"
++#            "${CMAKE_CURRENT_BINARY_DIR}/SDL2_imageConfigVersion.cmake"
++#            cmake/Findlibjxl.cmake
++#            cmake/Findwebp.cmake
++#        DESTINATION "${PKG_PREFIX}"
++#        COMPONENT devel
++#    )
++#    install(EXPORT SDL2ImageExports
++#        FILE SDL2_image-${sdl2_image_install_name_infix}-targets.cmake
++#        NAMESPACE SDL2_image::
++#        DESTINATION "${PKG_PREFIX}"
++#        COMPONENT devel
++#    )
++
++#    if(SDL2IMAGE_BUILD_SHARED_LIBS) # Only create a .pc file for a shared SDL2_image
++#        set(prefix "${CMAKE_INSTALL_PREFIX}")
++#        set(exec_prefix "\${prefix}")
++#        set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
++#        set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
++#        set(PACKAGE "${PROJECT_NAME}")
++#        set(VERSION "${FULL_VERSION}")
++#        set(SDL_VERSION "${SDL_REQUIRED_VERSION}")
++#        string(JOIN " " PC_REQUIRES ${PC_REQUIRES})
++#        string(JOIN " " PC_LIBS ${PC_LIBS})
++#        configure_file("${PROJECT_SOURCE_DIR}/SDL2_image.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc.intermediate" @ONLY)
++#        file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/SDL2_image-$<CONFIG>.pc" INPUT "${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc.intermediate")
++
++#        set(PC_DESTDIR)
++#        if(CMAKE_SYSTEM_NAME MATCHES FreeBSD)
++#            # FreeBSD uses ${PREFIX}/libdata/pkgconfig
++#            set(PC_DESTDIR "libdata/pkgconfig")
++#        else()
++#            set(PC_DESTDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
++#        endif()
++#        # Only install a SDL2_image.pc file in Release mode
++#        install(CODE "
++#            # FIXME: use file(COPY_FILE) if minimum CMake version >= 3.21
++#            execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy_if_different
++#                \"${CMAKE_CURRENT_BINARY_DIR}/SDL2_image-$<CONFIG>.pc\"
++#                \"${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc\")
++#            file(INSTALL DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PC_DESTDIR}\" 
++#                TYPE FILE 
++#                FILES \"${CMAKE_CURRENT_BINARY_DIR}/SDL2_image.pc\")" CONFIG Release COMPONENT devel)
++#    endif()
++
++#    if(SDL2IMAGE_BUILD_SHARED_LIBS AND (APPLE OR (UNIX AND NOT ANDROID)))
++#        install(
++#            FILES
++#                "${PROJECT_BINARY_DIR}/libSDL2_image$<$<CONFIG:Debug>:${SDL2IMAGE_DEBUG_POSTFIX}>$<TARGET_FILE_SUFFIX:SDL2_image>"
++#            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++#            COMPONENT devel
++#        )
++#    endif()
++
++#    install(FILES "LICENSE.txt"
++#        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}"
++#        COMPONENT library
++#    )
++#endif() # End of SDL2IMAGE_INSTALL block
+ 
+ if(SDL2IMAGE_SAMPLES)
+     add_executable(showanim showanim.c)
+     add_executable(showimage showimage.c)
+ 
+-    find_package(SDL2main)
++    #find_package(SDL2main) # Commented out
+ 
+     foreach(prog showanim showimage)
+         # FIXME: mingw should be handled by SDL2::SDL2(-static) target
+@@ -780,4 +776,4 @@ endif()
+ if(SDL2IMAGE_TESTS)
+     enable_testing()
+     add_subdirectory(test)
+-endif()
++endif()
+\ No newline at end of file

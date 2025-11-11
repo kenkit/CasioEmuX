@@ -84,7 +84,7 @@ namespace casioemu
 			SetupROMRegion(regions[5], 0x50000, 0x10000, 0x50000, strict_memory, emulator);
 			SetupROMRegion(regions[6], 0x60000, 0x10000, 0x60000, strict_memory, emulator);
 			SetupROMRegion(regions[7], 0x70000, 0x10000, 0x70000, strict_memory, emulator);
-			if(emulator.GetModelInfo("real_hardware")) {
+			if(static_cast<bool>(emulator.GetModelInfo("real_hardware").asInt())) {
 				SetupROMRegion(regions[8], 0x80000, 0x0ffe0, 0x80000, strict_memory, emulator);
 				SetupROMRegion(regions[9], 0x90000, 0x10000, 0x90000, strict_memory, emulator);
 				SetupROMRegion(regions[10], 0xa0000, 0x10000, 0xa0000, strict_memory, emulator);

@@ -1,0 +1,12 @@
+[submodule "emulator/libs/lua"]
+	path = emulator/libs/lua
+	url = https://github.com/lua/lua.git
+[submodule "emulator/libs/wineditline"]
+	path = emulator/libs/wineditline
+	url = https://github.com/winlibs/wineditline.git
+[submodule "emulator/libs/SDL_image"]
+	path = emulator/libs/SDL_image
+	url = https://github.com/libsdl-org/SDL_image.git
+[submodule "emulator/libs/SDL"]
+	path = emulator/libs/SDL
+	url = https://github.com/libsdl-org/SDL.git

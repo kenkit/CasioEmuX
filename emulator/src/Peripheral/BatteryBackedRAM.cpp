@@ -13,7 +13,7 @@ namespace casioemu
 {
 	void BatteryBackedRAM::Initialise()
 	{
-		bool real_hardware = emulator.GetModelInfo("real_hardware");
+		bool real_hardware = static_cast<bool>(emulator.GetModelInfo("real_hardware").asInt());
 		switch (emulator.hardware_id)
 		{
 		case HW_ES_PLUS:
