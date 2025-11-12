@@ -1,5 +1,6 @@
 models/*/*.bin
 models/*/*.txt
+build/
 *.exe
 .vscode/
 .vs/
